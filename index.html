@@ -24,6 +24,12 @@ button{border:0;border-radius:12px;padding:12px 20px;font-size:17px;font-weight:
 </style>
 </head>
 <body>
+<div id="menu">
+  <h1>🐱 Лотков Jump</h1>
+  <button id="menuPlay">🎮 ИГРАТЬ</button>
+  <button id="menuShop">🛒 МАГАЗИН</button>
+  <button id="menuExit">🚪 ВЫХОД</button>
+</div>
 <div id="top">
 Нажми сюда, чтобы начать играть! 🎮
 <div id="hud">Высота: <b id="score">0</b> / 100</div>
@@ -35,7 +41,7 @@ button{border:0;border-radius:12px;padding:12px 20px;font-size:17px;font-weight:
 <div class="controls">
 <button class="ctrl" id="left">◀</button><button class="ctrl" id="jump">⬆</button><button class="ctrl" id="right">▶</button>
 </div>
-<div id="start"><div class="card"><h2>🧱 Лоткова Jump</h2><p>Прыгай по кубикам и убегай от поднимающейся лавы!</p><button id="play">Играть</button></div></div>
+<div id="start"><div class="card"><h2>🐱 Лотков Jump</h2><p>Прыгай по кубикам и убегай от поднимающейся лавы!</p><button id="play">Играть</button></div></div>
 <div id="gameover" class="hidden"><div class="card"><h2>🔥 Игра окончена</h2><p>Твой рекорд: <b id="final">0</b> / 100</p><button id="again">Ещё раз</button><div id="records"></div></div></div>
 </div>
 <script>
@@ -109,6 +115,10 @@ function endGame(win){
   document.getElementById('records').innerHTML='<b>🏆 Топ-100 рекордов</b><br>'+rec.map((v,i)=>`${i+1}. ${v}`).join('<br>');
 }
 document.getElementById('play').onclick=startGame;
+document.getElementById('menuPlay').onclick=()=>{
+  document.getElementById('menu').style.display='none';
+  startGame();
+};
 document.getElementById('again').onclick=startGame;
 document.addEventListener('keydown',e=>{
   if(e.key==='ArrowLeft'||e.key==='a')move(-1);
