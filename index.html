@@ -35,6 +35,11 @@ button{border:0;border-radius:12px;padding:12px 20px;font-size:17px;font-weight:
 <div id="hud">Высота: <b id="score">0</b> / 100</div>
 </div>
 <div id="game">
+<div id="shop" style="display:none">
+  <h1>🛒 МАГАЗИН</h1>
+  <p>🪙 Монеты: <b id="coins">0</b></p>
+  <button id="shopBack">🔙 НАЗАД</button>
+</div>
 <div id="world"></div>
 <img id="player" src="player.jpg" alt="">
 <div id="lava"></div>
@@ -115,9 +120,15 @@ function endGame(win){
   document.getElementById('records').innerHTML='<b>🏆 Топ-100 рекордов</b><br>'+rec.map((v,i)=>`${i+1}. ${v}`).join('<br>');
 }
 document.getElementById('play').onclick=startGame;
-document.getElementById('menuPlay').onclick=()=>{
+document.getElementById('menuShop').onclick=()=>{
   document.getElementById('menu').style.display='none';
-  startGame();
+  document.getElementById('shop').style.display='block';
+};
+
+document.getElementById('shopBack').onclick=()=>{
+  document.getElementById('shop').style.display='none';
+  document.getElementById('menu').style.display='block';
+
 };
 document.getElementById('again').onclick=startGame;
 document.addEventListener('keydown',e=>{
