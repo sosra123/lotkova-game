@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
+<title>Лоткова — Прыжки</title>
+<style>
+*{box-sizing:border-box} html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#10131a;color:white;font-family:system-ui,sans-serif}
+#top{height:74px;text-align:center;padding:8px 6px;font-weight:800;font-size:18px;background:#171b24}
+#hud{font-size:14px;margin-top:3px}
+#game{position:relative;height:calc(100% - 74px);overflow:hidden;background:linear-gradient(#7ec8ff 0%,#d8f1ff 58%,#9fd1ff 100%)}
+#world{position:absolute;inset:0;transition:transform .08s linear}
+.platform{position:absolute;height:22px;border-radius:5px;background:#6d7480;box-shadow:0 4px 0 #424852;outline:2px solid rgba(255,255,255,.25)}
+#player{position:absolute;width:58px;height:58px;border-radius:50%;object-fit:cover;z-index:3;box-shadow:0 3px 7px #333}
+#lava{position:absolute;left:0;right:0;bottom:0;height:70px;background:linear-gradient(#ffb300,#ff4d00 35%,#d90000);z-index:4;box-shadow:0 -6px 18px #ff5b00}
+#lava:before{content:"";position:absolute;top:-8px;left:0;right:0;height:12px;background:#ffcf33;border-radius:50%}
+#start,#gameover{position:absolute;inset:0;z-index:10;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.48);padding:20px}
+.card{background:#171b24;border:1px solid #4d5668;border-radius:18px;padding:22px;text-align:center;max-width:360px;box-shadow:0 10px 40px #0008}
+button{border:0;border-radius:12px;padding:12px 20px;font-size:17px;font-weight:800;background:#fff;color:#111;cursor:pointer}
+.controls{position:absolute;left:0;right:0;bottom:14px;z-index:8;display:flex;justify-content:space-between;padding:0 18px;pointer-events:none}
+.ctrl{width:78px;height:58px;border-radius:16px;background:#ffffff55;border:2px solid #fff8;color:#fff;font-size:30px;pointer-events:auto;touch-action:none}
+.hidden{display:none!important}
+#records{margin-top:10px;text-align:left;font-size:12px;color:#cfd5df;max-height:120px;overflow:auto}
+</style>
+</head>
+<body>
+<div id="top">
+👇Надписи на Лоткова чтобы поиграть в игру👇
+<div id="hud">Высота: <b id="score">0</b> / 100</div>
+</div>
+<div id="game">
+<div id="world"></div>
+<img id="player" src="photos/player.jpg" alt="">
+<div id="lava"></div>
+<div class="controls">
+<button class="ctrl" id="left">◀</button><button class="ctrl" id="jump">⬆</button><button class="ctrl" id="right">▶</button>
+</div>
+<div id="start"><div class="card"><h2>🧱 Лоткова Jump</h2><p>Прыгай по кубикам и убегай от поднимающейся лавы!</p><button id="play">Играть</button></div></div>
+<div id="gameover" class="hidden"><div class="card"><h2>🔥 Игра окончена</h2><p>Твой рекорд: <b id="final">0</b> / 100</p><button id="again">Ещё раз</button><div id="records"></div></div></div>
+</div>
+<script>
+const game=document.getElementById('game'),world=document.getElementById('world'),p=document.getElementById('player');
+const scoreEl=document.getElementById('score'), lava=document.getElementById('lava');
+let x=100,y=0,vx=0,vy=0,camera=0,score=0,running=false;
+const platforms=[];
+const W=innerWidth;
+
+function makeLevel(){
+  world.innerHTML='';
+  platforms.length=0;
+  let px=70, py=game.clientHeight-115;
+  for(let i=0;i<125;i++){
+    px += 65 + Math.random()*95;
+    py += (Math.random()-.5)*115;
+    py=Math.max(90,Math.min(game.clientHeight-150,py));
+    const el=document.createElement('div');
+    el.className='platform';
+    el.style.left=px+'px'; el.style.top=py+'px';
+    el.style.width=(70+Math.random()*55)+'px';
+    world.appendChild(el);
+    platforms.push({x:px,y:py,w:parseFloat(el.style.width),h:22,el});
+  }
+  // Стартовая площадка
+  platforms.unshift({x:30,y:game.clientHeight-85,w:150,h:22,el:null});
+  x=75;y=game.clientHeight-145;vx=0;vy=0;camera=0;score=0;
+  p.style.left=x+'px';p.style.top=y+'px';
+  world.style.transform='translateX(0)';
+}
+function jump(){
+  if(!running)return;
+  if(Math.abs(vy)<2) vy=-11;
+}
+function move(dx){vx=dx*4}
+function stop(){vx=0}
+function loop(){
+  if(!running)return;
+  vy+=0.48; x+=vx; y+=vy;
+  if(x<5)x=5;
+  // platforms under player
+  for(const a of platforms){
+    if(vy>0 && x+48>a.x && x<a.x+a.w && y+58<=a.y+14 && y+58+vy>=a.y){
+      y=a.y-58;vy=0;break;
+    }
+  }
+  // camera follows to the right
+  camera=Math.max(0,x-game.clientWidth*.38);
+  world.style.transform=`translateX(${-camera}px)`;
+  p.style.left=(x-camera)+'px';p.style.top=y+'px';
+  const progress=Math.max(0,Math.floor(x/9));
+  score=Math.min(100,progress);scoreEl.textContent=score;
+  lava.style.height=(70+Math.max(0,score*2.1))+'px';
+  if(score>=100){endGame(true);return}
+  if(y>game.clientHeight-lava.offsetHeight-5) endGame(false);
+  requestAnimationFrame(loop);
+}
+function startGame(){
+  document.getElementById('start').classList.add('hidden');
+  document.getElementById('gameover').classList.add('hidden');
+  makeLevel();running=true;requestAnimationFrame(loop);
+}
+function endGame(win){
+  running=false;
+  document.getElementById('final').textContent=score;
+  document.getElementById('gameover').classList.remove('hidden');
+  const key='lotkova_records';
+  let rec=JSON.parse(localStorage.getItem(key)||'[]');
+  rec.push(score);rec.sort((a,b)=>b-a);rec=rec.slice(0,100);
+  localStorage.setItem(key,JSON.stringify(rec));
+  document.getElementById('records').innerHTML='<b>🏆 Топ-100 рекордов</b><br>'+rec.map((v,i)=>`${i+1}. ${v}`).join('<br>');
+}
+document.getElementById('play').onclick=startGame;
+document.getElementById('again').onclick=startGame;
+document.addEventListener('keydown',e=>{
+  if(e.key==='ArrowLeft'||e.key==='a')move(-1);
+  if(e.key==='ArrowRight'||e.key==='d')move(1);
+  if(e.key==='ArrowUp'||e.key===' '||e.key==='w')jump();
+});
+for(const [id,fn,up] of [['left',()=>move(-1),stop],['right',()=>move(1),stop]]){
+  const b=document.getElementById(id); b.addEventListener('pointerdown',fn);b.addEventListener('pointerup',up);b.addEventListener('pointercancel',up);b.addEventListener('pointerleave',up);
+}
+document.getElementById('jump').addEventListener('pointerdown',jump);
+makeLevel();
+</script>
+</body>
+</html>
