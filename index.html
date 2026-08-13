@@ -121,15 +121,6 @@ function endGame(win){
   document.getElementById('records').innerHTML='<b>🏆 Топ-100 рекордов</b><br>'+rec.map((v,i)=>`${i+1}. ${v}`).join('<br>');
 }
 document.getElementById('play').onclick=startGame;
-document.getElementById('menuShop').onclick=()=>{
-  document.getElementById('menu').style.display='none';
-  document.getElementById('shop').style.display='block';
-};
-
-document.getElementById('shopBack').onclick=()=>{
-  document.getElementById('shop').style.display='none';
-  document.getElementById('menu').style.display='block';
-};
 
 document.getElementById('again').onclick=startGame;
 document.addEventListener('keydown',e=>{
